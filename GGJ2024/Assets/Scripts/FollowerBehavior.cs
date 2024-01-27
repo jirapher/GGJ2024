@@ -9,8 +9,14 @@ public class FollowerBehavior : MonoBehaviour
     public Behavior curBehavior;
     public bool isSelected = false;
     private Rigidbody2D rb;
+    public SpriteRenderer sr;
     public GameObject highlight;
     private Camera cam;
+
+    [Header("Animation")]
+    public Animator anim;
+    private bool isIdle = false;
+    private Vector2 lastRBVel = Vector2.zero;
 
     [Header("Attack")]
     public float timeBetweenAttacks = 1;
@@ -37,6 +43,7 @@ public class FollowerBehavior : MonoBehaviour
         attackTimeHold = timeBetweenAttacks;
         detectTimeHold = detectIntervalTime;
         cam = Camera.main;
+        sr = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
         FollowerManager.instance.AddFollower(this);
     }
@@ -56,6 +63,7 @@ public class FollowerBehavior : MonoBehaviour
 
     private void Update()
     {
+        UpdateAnim();
 
         if (attacking)
         {
@@ -103,6 +111,23 @@ public class FollowerBehavior : MonoBehaviour
         }
     }
 
+    public void UpdateAnim()
+    {
+        Vector2 vel = rb.velocity;
+        isIdle = vel == Vector2.zero;
+        anim.SetBool("isIdle", isIdle);
+        if (isIdle)
+        {
+            anim.SetFloat("lastVX", lastRBVel.x);
+            anim.SetFloat("lastVY", lastRBVel.y);
+            return;
+        }
+
+        anim.SetFloat("vX", vel.x);
+        anim.SetFloat("vY", vel.y);
+        lastRBVel = rb.velocity;
+    }
+
     private void DetectTimer()
     {
         detectIntervalTime -= Time.deltaTime;
@@ -116,61 +141,6 @@ public class FollowerBehavior : MonoBehaviour
     {
         curBehavior = Behavior.idle;
         highlight.GetComponent<SpriteRenderer>().color = Color.clear;
-    }
-
-    public void SetFollow(GameObject target)
-    {
-        followTarget = target;
-        curBehavior = Behavior.follow;
-        highlight.GetComponent<SpriteRenderer>().color = Color.green;
-    }
-
-    public void SetAttack(UnitHealth target)
-    {
-        enemyTarget = target;
-        highlight.GetComponent<SpriteRenderer>().color = Color.red;
-        curBehavior = Behavior.attack;
-    }
-
-    private void Attack()
-    {
-        enemyTarget.TakeDamage(attackDamage);
-    }
-
-    private void GetInAttackRange()
-    {
-        if ((enemyTarget.gameObject.transform.position - transform.position).sqrMagnitude > attackRange)
-        {
-            Vector2 dir = (enemyTarget.gameObject.transform.position - transform.position).normalized * moveSpeed;
-            rb.velocity = dir;
-            attacking = false;
-            return;
-        }
-
-        attacking = true;
-    }
-
-    private void Follow()
-    {
-        if((followTarget.transform.position - transform.position).sqrMagnitude <= stoppingDistance)
-        {
-            return;
-        }
-
-        Vector2 dir = (followTarget.transform.position - transform.position).normalized * moveSpeed;
-        rb.velocity = dir;
-    }
-    private void FollowMouse()
-    {
-        Vector3 mousePos = cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-        mousePos = new Vector2(mousePos.x, mousePos.y);
-        if (Vector2.Distance(mousePos, transform.position) <= stoppingDistance)
-        {
-            return;
-        }
-
-        Vector2 dir = (mousePos - transform.position).normalized * moveSpeed;
-        rb.velocity = dir;
     }
     private void MoveToDestination()
     {
@@ -201,4 +171,82 @@ public class FollowerBehavior : MonoBehaviour
             }
         }
     }
+
+    public void SetStats(FollowerStats stats)
+    {
+        //4dir?
+        sr.sprite = stats.sprite;
+        anim.runtimeAnimatorController = stats.animC;
+        curBehavior = Behavior.idle;
+        timeBetweenAttacks = stats.timeBetweenAttacks;
+        attackTimeHold = timeBetweenAttacks;
+        attackRange = stats.attackRange;
+        attackDamage = stats.attackDamage;
+        stoppingDistance = stats.stoppingDistance;
+        moveSpeed = stats.moveSpeed;
+        interactableLayer = stats.interactableLayer;
+        detectRadius = stats.detectRadius;
+        detectDistance = stats.detectDistance;
+        detectIntervalTime = stats.detectIntervalTime;
+        detectTimeHold = detectIntervalTime;
+        GetComponent<UnitHealth>().SetHealth(stats.maxHP);
+    }
+
+    #region Attack
+    public void SetAttack(UnitHealth target)
+    {
+        enemyTarget = target;
+        highlight.GetComponent<SpriteRenderer>().color = Color.red;
+        curBehavior = Behavior.attack;
+    }
+
+    private void Attack()
+    {
+        enemyTarget.TakeDamage(attackDamage, GetComponent<UnitHealth>());
+    }
+
+    private void GetInAttackRange()
+    {
+        if ((enemyTarget.gameObject.transform.position - transform.position).sqrMagnitude > attackRange)
+        {
+            Vector2 dir = (enemyTarget.gameObject.transform.position - transform.position).normalized * moveSpeed;
+            rb.velocity = dir;
+            attacking = false;
+            return;
+        }
+
+        attacking = true;
+    }
+    #endregion
+
+    #region Follow
+    public void SetFollow(GameObject target)
+    {
+        followTarget = target;
+        curBehavior = Behavior.follow;
+        highlight.GetComponent<SpriteRenderer>().color = Color.green;
+    }
+    private void Follow()
+    {
+        if ((followTarget.transform.position - transform.position).sqrMagnitude <= stoppingDistance)
+        {
+            return;
+        }
+
+        Vector2 dir = (followTarget.transform.position - transform.position).normalized * moveSpeed;
+        rb.velocity = dir;
+    }
+    private void FollowMouse()
+    {
+        Vector3 mousePos = cam.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+        mousePos = new Vector2(mousePos.x, mousePos.y);
+        if (Vector2.Distance(mousePos, transform.position) <= stoppingDistance)
+        {
+            return;
+        }
+
+        Vector2 dir = (mousePos - transform.position).normalized * moveSpeed;
+        rb.velocity = dir;
+    }
+    #endregion
 }

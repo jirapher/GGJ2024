@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1540803f75408594aab1b4cd37a22163, type: 3}
+  m_Name: Copper
+  m_EditorClassIdentifier: 
+  type: 0
+  interactableLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  sprite: {fileID: -829427784, guid: d269a08638da47144ac36359d9f7d9be, type: 3}
+  animC: {fileID: 9100000, guid: 7636c6914b19fd9408bcec7200eeb63c, type: 2}
+  maxHP: 3
+  timeBetweenAttacks: 2
+  attackRange: 1.5
+  attackDamage: 0.5
+  stoppingDistance: 1.5
+  moveSpeed: 1.5
+  detectRadius: 2
+  detectDistance: 2
+  detectIntervalTime: 3

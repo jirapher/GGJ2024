@@ -10,6 +10,7 @@ public class AOEInputManager : MonoBehaviour
     public LayerMask interactionLayer;
     public Vector3 mousePos;
     private Vector3 mouseRayReach = new Vector3(0, 0, 10);
+    private EnemyBehavior selectedEnemy = null;
 
     [Header("FollowerManagement")]
     private List<FollowerBehavior> selectedFollowers = new List<FollowerBehavior>();
@@ -53,7 +54,6 @@ public class AOEInputManager : MonoBehaviour
     {
         moveInput = inputControls.PlayerControls.move.ReadValue<Vector2>();
     }
-
     private void FixedUpdate()
     {
         playerController.MovePlayer(moveInput);
@@ -69,15 +69,6 @@ public class AOEInputManager : MonoBehaviour
         CircleOff();
     }
 
-    private void CircleOn()
-    {
-        circleSelect.gameObject.SetActive(true);
-    }
-
-    private void CircleOff()
-    {
-        circleSelect.gameObject.SetActive(false);
-    }
 
     public void MouseRight(InputAction.CallbackContext ctx)
     {
@@ -88,13 +79,33 @@ public class AOEInputManager : MonoBehaviour
 
         if(col.TryGetComponent<EnemyBehavior>(out EnemyBehavior enemy))
         {
-            print("setting attack enemy");
             //sticky but have to establish it's an enemy before we can pull unit health :/
             SetAttackTarget(enemy.GetComponent<UnitHealth>());
+            SelectEnemy(enemy);
             return;
         }
 
         SetDestination(clickLoc);
+    }
+
+    private void SelectEnemy(EnemyBehavior enemy)
+    {
+        if(selectedEnemy != null)
+        {
+            selectedEnemy.SetSelected(false);
+        }
+
+        selectedEnemy = enemy;
+        enemy.SetSelected(true);
+    }
+    private void CircleOn()
+    {
+        circleSelect.gameObject.SetActive(true);
+    }
+
+    private void CircleOff()
+    {
+        circleSelect.gameObject.SetActive(false);
     }
 
     public void AddUnit(FollowerBehavior unit)
