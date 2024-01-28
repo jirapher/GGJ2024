@@ -4,13 +4,18 @@ using UnityEngine;
 
 public class EnemyBehavior : MonoBehaviour
 {
+    public bool isBank = false;
     public enum Behavior { attack, follow, patrol, move }
     public Behavior curBehavior;
     public bool isSelected = false;
     private Rigidbody2D rb;
-    private SpriteRenderer sr;
+    public SpriteRenderer sr;
     public GameObject highlight;
-    private Camera cam;
+
+    [Header("Animation")]
+    public Animator anim;
+    private bool isIdle = false;
+    private Vector2 lastRBVel = Vector2.zero;
 
     [Header("Patrol")]
     public float timeToMove = 1;
@@ -40,12 +45,11 @@ public class EnemyBehavior : MonoBehaviour
     private float detectTimeHold;
     private void Start()
     {
+        if (isBank) { return; }
         timeMoveHold = timeToMove;
         timeBetweenMovesHold = timeBetweenMoves;
         attackTimeHold = timeBetweenAttacks;
         detectTimeHold = detectIntervalTime;
-        cam = Camera.main;
-        sr = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
     }
 
@@ -65,13 +69,17 @@ public class EnemyBehavior : MonoBehaviour
 
     private void Update()
     {
+        if (isBank) { return; }
+
+        UpdateAnim();
 
         if (attacking)
         {
             if (enemyTarget == null)
             {
                 attacking = false;
-                SetFollow(followTarget);
+                SetPatrol();
+                TargetDetection();
             }
             timeBetweenAttacks -= Time.deltaTime;
             if (timeBetweenAttacks <= 0)
@@ -111,6 +119,23 @@ public class EnemyBehavior : MonoBehaviour
                 break;
 
         }
+    }
+
+    public void UpdateAnim()
+    {
+        Vector2 vel = rb.velocity;
+        isIdle = vel == Vector2.zero;
+        anim.SetBool("isIdle", isIdle);
+        if (isIdle)
+        {
+            anim.SetFloat("lastVX", lastRBVel.x);
+            anim.SetFloat("lastVY", lastRBVel.y);
+            return;
+        }
+
+        anim.SetFloat("vX", vel.x);
+        anim.SetFloat("vY", vel.y);
+        lastRBVel = rb.velocity;
     }
 
     private void DetectTimer()

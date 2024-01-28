@@ -220,7 +220,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8, y: 0.8, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3638372657354304438}
@@ -245,15 +245,15 @@ MonoBehaviour:
   highlight: {fileID: 3221834537418667469}
   anim: {fileID: 6601670197238943119}
   timeBetweenAttacks: 2
-  attackRange: 1.5
+  attackRange: 3
   attackDamage: 0.5
-  stoppingDistance: 1.5
-  moveSpeed: 1.5
+  stoppingDistance: 3
+  moveSpeed: 2
   interactableLayer:
     serializedVersion: 2
     m_Bits: 64
-  detectRadius: 2
-  detectDistance: 2
+  detectRadius: 4
+  detectDistance: 4
   detectIntervalTime: 3
 --- !u!58 &6439169665274459089
 CircleCollider2D:
@@ -333,3 +333,4 @@ MonoBehaviour:
   curHP: 0
   isEnemey: 0
   isPlayer: 0
+  isBank: 0
